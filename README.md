@@ -7,11 +7,11 @@ Language models for the spanish language that are part of the MarIA project. An 
 
 ## Install
 ```
-docker build -t lmspanish-tool .
+sh docker-build.sh
 ```
 ## Run
 ```
-docker run --rm -p 0.0.0.0:8866:8866 --name lmspanish lmspanish-tool
+docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish:1.0
 ```
 
 ## Use
