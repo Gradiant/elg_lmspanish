@@ -11,7 +11,7 @@ sh docker-build.sh
 ```
 ## Run
 ```
-docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish:1.0
+docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish:1.0 elg_lmspanish
 ```
 
 ## Use
