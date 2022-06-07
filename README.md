@@ -68,3 +68,5 @@ The original work of this tool is:
 }
 ```
 - For questions regarding this work, contact Asier Gutiérrez-Fandiño (<plantl-gob-es@bsc.es>)
+
+The license of the original work is MIT License.
