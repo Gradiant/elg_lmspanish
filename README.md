@@ -11,7 +11,7 @@ sh docker-build.sh
 ```
 ## Run
 ```
-docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish elg_lmspanish:1.0
+docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish elg_lmspanish:1.0.1
 ```
 
 ## Use
@@ -19,7 +19,7 @@ docker run --rm -p 0.0.0.0:8866:8866 --name elg_lmspanish elg_lmspanish:1.0
 Use CURL to make a API request. Use the proper question/context order. The first 'content' field should be the context, and the second the question.
 
 ```
-curl -X POST http://0.0.0.0:8866/process -H 'Content-Type: application/json' -d '{"type": "structuredText","texts":[{"content": "Tengo 19 años y me llamo Maria."}, {"content": "Cuál es su nombre?"}]}'
+curl -X POST  http://0.0.0.0:8866/process -H 'Content-Type: application/json' -d '{"type":"text", "content":"Tengo 19 años y me llamo Maria.", "params":{"question":"Cuál es su nombre?"}}'
 ```
 
 
@@ -27,14 +27,13 @@ Result:
 
 ```
 {"response":{
-"type":"annotations",
-"annotations":{
-   "answers":[{"start":25,
-               "end":30,
-               "features":{
-                           "answer":"Maria",
-                           "score":0.999973714351654}
-                           }]}}}
+   "type":"texts",
+   "texts":[
+         {"content":"Maria"}
+      ]
+   }
+}
+
 
 ```
 
