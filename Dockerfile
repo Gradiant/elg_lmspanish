@@ -20,3 +20,7 @@ WORKDIR /lmspanish/
 COPY ./ /lmspanish/
 
 CMD ["python3", "serve.py"]
+
+RUN ["python3", "-c", "from init_model import Initializer; Initializer()"]
+
+ENV TRANSFORMERS_OFFLINE=1
