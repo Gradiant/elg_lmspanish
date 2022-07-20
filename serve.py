@@ -13,6 +13,8 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 APP_ROOT = "./"
 app.config["APPLICATION_ROOT"] = APP_ROOT
 app.config["UPLOAD_FOLDER"] = "files/"
+app.config["JSON_ADD_STATUS"] = False
+app.config["JSON_SORT_KEYS"] = False
 
 json_app = FlaskJSON(app)
 
@@ -25,57 +27,62 @@ config = AutoConfig.from_pretrained("PlanTL-GOB-ES/roberta-base-bne-sqac")
 
 pipeline = pipeline("question-answering", model=model, tokenizer=tokenizer)
 
-
-def prepare_output_format(answer):
-    response = {
-        "type": "annotations",
-        "annotations": {
-            "answers": [
-                {
-                    "start": answer["start"],
-                    "end": answer["end"],
-                    "features": {"answer": answer["answer"], "score": answer["score"]},
-                }
-            ]
-        },
-    }
-
-    return {"response": response}
-
+def generate_successful_text_response(answer):
+    response = {"type": "texts", "texts": [{"content": answer}]}
+    output = {"response": response}
+    return output
 
 @as_json
 @app.route("/process", methods=["POST"])
 def run_lmspanish():
     data = request.get_json()
-    if (
-        (data.get("type") != "structuredText")
-        or (data is None)
-        or ("texts" not in data)
-    ):
-        output = invalid_request_error(None)
-        return output
-    context = data.get("texts")[0].get("content")
-    question = data.get("texts")[1].get("content")
-    if question.find("?") == -1:
+    if data["type"] != "text":
+        # Standard message code for unsupported response type
         return generate_failure_response(
-            status=404,
-            code="elg.service.internalError",
-            text=None,
-            params=None,
-            detail="No question on input or incorrect order",
+            status=400,
+            code="elg.request.type.unsupported",
+            text="Request type {0} not supported by this service",
+            params=[data["type"]],
+            detail=None,
         )
 
-    try:
-        output = pipeline(question=question, context=context)  # json with the response
-    except Exception as e:
-        return generate_failure_response(
-            status=404,
-            code="elg.service.internalError",
-            text=None,
-            params=None,
-            detail=str(e),
+    if "content" not in data:
+        return invalid_request_error(
+            None,
         )
-    return prepare_output_format(output)
+
+    content = data.get("content")
+    params = data.get("params", {})
+    if "question" not in params:
+    # Standard message code for missing parameter
+        return generate_failure_response(
+            status=400,
+            code="elg.request.parameter.missing",
+            text="Required parameter {0} missing from request",
+            params=["question"],
+            detail=None,
+        )
+
+    context = content
+    question = params["question"]
+
+    try:
+        answer = pipeline(question=question, context=context)  # json with the response
+        print(answer)
+        output = generate_successful_text_response(answer["answer"])
+        return output
+    except Exception as e:
+        text = (
+            "Unexpected error. If your input text is too long, this may be the cause."
+        )
+        # Standard message for internal error - the real error message goes in params
+        return generate_failure_response(
+            status=500,
+            code="elg.service.internalError",
+            text="Internal error during processing: {0}",
+            params=[text],
+            detail=e.__str__(),
+        )
 
 
 @json_app.invalid_json_error
